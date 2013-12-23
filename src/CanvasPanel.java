@@ -43,7 +43,6 @@ class CanvasPanel extends Panel {
 			g.setColor(Color.red);
 			g.clearRect(0, 0, width, height);
 			
-			System.out.println("paint");
 			bg.drawImage(buf, 0, 0, this);
 		}
 	}
