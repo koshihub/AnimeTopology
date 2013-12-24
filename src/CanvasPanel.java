@@ -1,6 +1,7 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 
 class CanvasPanel extends Panel {
@@ -25,9 +26,15 @@ class CanvasPanel extends Panel {
 		});
 	}
 	
+	public void openImage(File file) {
+		depthImage = new DepthImage(file);
+		repaint();
+	}
+	
 	public void resize() {
 		width = getSize().width;
 		height = getSize().height;
+		buf = createImage(width, height);
 	}
 	
 	public void repaint(Graphics g) {
@@ -40,8 +47,12 @@ class CanvasPanel extends Panel {
 		} else {
 			Graphics g = buf.getGraphics();
 			
-			g.setColor(Color.red);
-			g.clearRect(0, 0, width, height);
+			g.setColor(Color.white);
+			g.fillRect(0, 0, width, height);
+			
+			if( depthImage != null ) {
+				depthImage.draw(g);
+			}
 			
 			bg.drawImage(buf, 0, 0, this);
 		}

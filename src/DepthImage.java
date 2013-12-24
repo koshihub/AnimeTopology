@@ -1,5 +1,10 @@
+import static img.ImageUtility.*;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -11,31 +16,74 @@ public class DepthImage {
 	List<Pixel> borders;
 	List<Area> areas;
 	List<Junction> junctions;
+	BufferedImage image;
 
-	public DepthImage(int w, int h) {
-		width = w;
-		height = h;
-		canvas = new Pixel[w][h];
+	public DepthImage(File file) {
+		// load image
+		try {
+			image = ImageIO.read(file);
+		} catch (Exception e) {
+			e.printStackTrace();
+			image = null;
+		}
 		
-		for(int i=0; i<w; i++)
-			for(int j=0; j<h; j++)
-				canvas[i][j] = new Pixel(i, j);
+		if( image != null ) {
+			width = image.getWidth();
+			height = image.getHeight();
+			canvas = new Pixel[width][height];
+			
+			for(int i=0; i<width; i++)
+				for(int j=0; j<height; j++)
+					canvas[i][j] = new Pixel(i, j);
 
-		borders = new ArrayList<Pixel>();
-		areas = new ArrayList<Area>();
-		junctions = new ArrayList<Junction>();
+			borders = new ArrayList<Pixel>();
+			areas = new ArrayList<Area>();
+			junctions = new ArrayList<Junction>();
+		}
+		
+		// analyze borders
+		analyzeBorders();
+		
+		// analyze areas
+		analyzeAreas();
 	}
 	
-	// analyze areas
-	public void analyzeAreas() {
+	public void draw(Graphics g) {
+		// draw areas
+		for(int i=0; i<areas.size(); i++) {
+			areas.get(i).draw(g);
+		}
 		
+		// draw junctions
+		for(int i=0; i<junctions.size(); i++) {
+			junctions.get(i).draw(g);
+		}
+	}
+	
+	// analyze borders
+	private void analyzeBorders() {
+		
+		borders.clear();
+		for(int i=0; i<width; i++) {
+			for(int j=0; j<height; j++) {
+				int color = image.getRGB(i, j);
+				if( r(color) < 10 && g(color) < 10 && b(color) < 10 ) {
+					borders.add(canvas[i][j]);
+					canvas[i][j].border = true;
+				}
+			}
+		}
+
+		// connect pixels
+		connetBorderPixel();
+	}
+	
+	// assign areaIDs to pixels
+	private void assignAreaID() {
 		int areaIndex = 1;
 		boolean[][] flag = new boolean[width][height];
 		
 		areas.clear();
-
-		// connect pixels
-		connetBorderPixel();
 		
 		// separate areas 
 		for(int i=0; i<width; i++) {
@@ -64,7 +112,7 @@ public class DepthImage {
 						// border
 						if( canvas[p.x][p.y].border ) {
 							flag[p.x][p.y] = true;
-							area.addPixel(canvas[p.x][p.y], true);
+							area.addPixel(canvas[p.x][p.y]);
 							continue;
 						}
 						
@@ -72,7 +120,7 @@ public class DepthImage {
 						if( !flag[p.x][p.y] ) {
 							flag[p.x][p.y] = true;
 							canvas[p.x][p.y].areaID = areaIndex;
-							area.addPixel(canvas[p.x][p.y], false);
+							area.addPixel(canvas[p.x][p.y]);
 							
 							int[][] offset = {{-1,0}, {1,0}, {0,-1}, {0,1}};
 							for(int off=0; off<offset.length; off++) {
@@ -89,6 +137,13 @@ public class DepthImage {
 				}
 			}
 		}
+	}
+	
+	// analyze areas
+	private void analyzeAreas() {
+		
+		// assign areaID
+		assignAreaID();
 
 		// set border separateAreaIDs
 		for(int b=0; b<borders.size(); b++ ) {
@@ -126,6 +181,9 @@ public class DepthImage {
 				}
 			}
 		}
+
+		// final assign
+		assignAreaID();
 		
 		// find junctions
 		junctions.clear();
@@ -141,8 +199,14 @@ public class DepthImage {
 			hi.addHierarchy(j.front, j.back[0]);
 			hi.addHierarchy(j.front, j.back[1]);
 		}
+		hi.setDepth(1, 0.0);
+		hi.addDepthIndex();
 		
-		System.out.println("finish" + hi.hierarchy);
+		// set depths and prepare image
+		for(Area a : areas) {
+			a.depth = hi.getDepth(a.areaID);
+			a.prepareImage();
+		}
 	}
 	
 	// connect a border pixel to neighbors
@@ -216,8 +280,6 @@ public class DepthImage {
 	
 	// delete pixel
 	private void deleteBorder(Pixel p) {
-		
-		int areaID = -1;
 		int x = p.x, y = p.y;
 		
 		// disconnect
@@ -233,12 +295,15 @@ public class DepthImage {
 						// disconnect
 						canvas[xx][yy].connect.remove(p);
 					}
-					else {
-						// propagate areaID
-						areaID = canvas[xx][yy].areaID;
-					}
 				}
 			}
 		}
+		
+		// remove border attributes
+		p.border = false;
+		p.areaID = p.separateAreaIDs.get(0);
+		p.connect.clear();
+		p.separateAreaIDs.clear();
+		borders.remove(p);
 	}
 }

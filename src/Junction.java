@@ -57,10 +57,6 @@ public class Junction {
 				front = id;
 			}
 		}
-
-		System.out.println("back[0] : " + back[0]);
-		System.out.println("back[1] : " + back[1]);
-		System.out.println("front : " + front);
 	}
 	
 	// get cos of two vectors
@@ -95,7 +91,7 @@ public class Junction {
 		return new int[]{current.x - origin.x, current.y - origin.y};
 	}
 	
-	public void drawJunction(Graphics g) {
+	public void draw(Graphics g) {
 		//g.drawOval(p.x-3, p.y-3, 6, 6);
 		BasicStroke BStroke = new BasicStroke(3.0f);
         ((Graphics2D)g).setStroke(BStroke);

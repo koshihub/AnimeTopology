@@ -33,12 +33,12 @@ public class Canvas {
 		
 		// draw areas
 		for(int i=0; i<areas.size(); i++) {
-			areas.get(i).drawArea(g);
+			areas.get(i).draw(g);
 		}
 		
 		// draw junctions
 		for(int i=0; i<junctions.size(); i++) {
-			junctions.get(i).drawJunction(g);
+			junctions.get(i).draw(g);
 		}
 
 		g.drawImage(buf, 0, 0, null);
@@ -229,7 +229,7 @@ public class Canvas {
 						// border
 						if( canvas[p.x][p.y].border ) {
 							flag[p.x][p.y] = true;
-							area.addPixel(canvas[p.x][p.y], true);
+							area.addPixel(canvas[p.x][p.y]);
 							continue;
 						}
 						
@@ -237,7 +237,7 @@ public class Canvas {
 						if( !flag[p.x][p.y] ) {
 							flag[p.x][p.y] = true;
 							canvas[p.x][p.y].areaID = areaIndex;
-							area.addPixel(canvas[p.x][p.y], false);
+							area.addPixel(canvas[p.x][p.y]);
 							
 							int[][] offset = {{-1,0}, {1,0}, {0,-1}, {0,1}};
 							for(int off=0; off<offset.length; off++) {
