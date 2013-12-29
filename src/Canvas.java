@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class Canvas {
-
+/*
 	int width, height;
 	Pixel[][] canvas;
 	List<Pixel> borders;
@@ -33,12 +33,12 @@ public class Canvas {
 		
 		// draw areas
 		for(int i=0; i<areas.size(); i++) {
-			areas.get(i).draw(g);
+			areas.get(i).draw(g, 0, 0);
 		}
 		
 		// draw junctions
 		for(int i=0; i<junctions.size(); i++) {
-			junctions.get(i).draw(g);
+			junctions.get(i).draw(g, 0, 0);
 		}
 
 		g.drawImage(buf, 0, 0, null);
@@ -312,4 +312,5 @@ public class Canvas {
 		
 		System.out.println("finish" + hi.hierarchy);
 	}
+	*/
 }

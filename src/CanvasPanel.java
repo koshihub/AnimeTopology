@@ -10,6 +10,8 @@ class CanvasPanel extends Panel {
 	int width, height;
 	Image buf;
 	DepthImage depthImage;
+	boolean drawJunctionFlag = true, drawAreaIDFlag = true;
+	
 	
 	CanvasPanel() {
 		// mouse event
@@ -27,6 +29,7 @@ class CanvasPanel extends Panel {
 	}
 	
 	public void openImage(File file) {
+		depthImage = null;
 		depthImage = new DepthImage(file);
 		repaint();
 	}
@@ -51,11 +54,22 @@ class CanvasPanel extends Panel {
 			g.fillRect(0, 0, width, height);
 			
 			if( depthImage != null ) {
-				depthImage.draw(g);
+				depthImage.draw(g, 0, 0, drawAreaIDFlag, drawJunctionFlag);
+				depthImage.drawOriginal(g, 0, 410);
 			}
 			
 			bg.drawImage(buf, 0, 0, this);
 		}
+	}
+	
+	public void setJunctionFlag(boolean flag) {
+		this.drawJunctionFlag = flag;
+		repaint();
+	}
+
+	public void setAreaIAFlag(boolean flag) {
+		this.drawAreaIDFlag = flag;
+		repaint();
 	}
 	
 	public class MouseDispatcher extends MouseAdapter {

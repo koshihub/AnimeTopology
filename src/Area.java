@@ -30,9 +30,11 @@ public class Area {
 		color = c;
 	}
 	
-	public void draw(Graphics g) {
-		g.drawImage(buf, 0, 0, null);
-		g.drawString("[" + areaID + "]", x, y+20);
+	public void draw(Graphics g, int _x, int _y, boolean drawAreaIDFlag) {
+		g.drawImage(buf, _x, _y, null);
+		if( drawAreaIDFlag ) {
+			g.drawString("[" + areaID + "]", x+_x, y+_y+20);		
+		}
 	}
 	
 	public void prepareImage() {
@@ -43,6 +45,7 @@ public class Area {
 				buf.setRGB(p.x, p.y, Color.black.getRGB());
 			} else {
 				int val = (int)(depth * 255);
+				if(val < 0 || val > 255) val = 255;
 				buf.setRGB(p.x, p.y, new Color(val, val, val).getRGB());
 			}
 

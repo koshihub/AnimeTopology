@@ -91,18 +91,18 @@ public class Junction {
 		return new int[]{current.x - origin.x, current.y - origin.y};
 	}
 	
-	public void draw(Graphics g) {
+	public void draw(Graphics g, int _x, int _y) {
 		//g.drawOval(p.x-3, p.y-3, 6, 6);
 		BasicStroke BStroke = new BasicStroke(3.0f);
         ((Graphics2D)g).setStroke(BStroke);
         
 		// base
 		g.setColor(Color.red);
-		g.drawLine(p.x, p.y, p.x+base[0][0], p.y+base[0][1]);
-		g.drawLine(p.x, p.y, p.x+base[1][0], p.y+base[1][1]);
+		g.drawLine(p.x + _x, p.y + _y, p.x+base[0][0] + _x, p.y+base[0][1] + _y);
+		g.drawLine(p.x + _x, p.y + _y, p.x+base[1][0] + _x, p.y+base[1][1] + _y);
 		
 		// normal
 		g.setColor(Color.yellow);
-		g.drawLine(p.x, p.y, p.x+normal[0], p.y+normal[1]);
+		g.drawLine(p.x + _x, p.y + _y, p.x+normal[0] + _x, p.y+normal[1] + _y);
 	}
 }

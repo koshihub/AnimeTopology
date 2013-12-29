@@ -48,16 +48,22 @@ public class DepthImage {
 		analyzeAreas();
 	}
 	
-	public void draw(Graphics g) {
+	public void draw(Graphics g, int x, int y, boolean drawAreaIDFlag, boolean drawJunctionFlag) {
 		// draw areas
 		for(int i=0; i<areas.size(); i++) {
-			areas.get(i).draw(g);
+			areas.get(i).draw(g, x, y, drawAreaIDFlag);
 		}
 		
 		// draw junctions
-		for(int i=0; i<junctions.size(); i++) {
-			junctions.get(i).draw(g);
+		if( drawJunctionFlag ) {
+			for(int i=0; i<junctions.size(); i++) {
+				junctions.get(i).draw(g, x, y);
+			}
 		}
+	}
+	
+	public void drawOriginal(Graphics g, int x, int y) {
+		g.drawImage(image, x, y, null);
 	}
 	
 	// analyze borders
@@ -192,7 +198,7 @@ public class DepthImage {
 				junctions.add(new Junction(p));
 			}
 		}
-		
+
 		// propagate depth
 		Hierarchy hi = new Hierarchy();
 		for(Junction j : junctions) {
@@ -201,7 +207,7 @@ public class DepthImage {
 		}
 		hi.setDepth(1, 0.0);
 		hi.addDepthIndex();
-		
+
 		// set depths and prepare image
 		for(Area a : areas) {
 			a.depth = hi.getDepth(a.areaID);

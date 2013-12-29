@@ -22,16 +22,25 @@ class Main {
 		
 		// setting panel
 		Action act = new Action();
+		Change change = new Change();
 		Panel settingPanel = new Panel();
 		Button button = new Button("Open");
+		Checkbox check1 = new Checkbox("T-Junction");
+		Checkbox check2 = new Checkbox("AreaID");
+		check1.setState(true);
+		check2.setState(true);
 		settingPanel.setLayout(new FlowLayout());
 		settingPanel.add(button);
+		settingPanel.add(check1);
+		settingPanel.add(check2);
 		button.addActionListener(act);
+		check1.addItemListener(change);
+		check2.addItemListener(change);
 	    
 		frame.setLayout(new BorderLayout());
 		frame.add("Center", canvasPanel);
 		frame.add("North", settingPanel);
-		frame.setBounds(100, 100, 550, 550);
+		frame.setBounds(100, 100, 800, 1000);
 		frame.setVisible(true);
 	}
 
@@ -43,6 +52,18 @@ class Main {
 			    if (filechooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 			    	canvasPanel.openImage(filechooser.getSelectedFile());
 			    }
+			}
+		}
+	}
+	
+	public static class Change implements ItemListener {
+		public void itemStateChanged(ItemEvent e) {
+			Checkbox ch = (Checkbox)e.getItemSelectable();
+			if( ch.getLabel().equals("T-Junction") ) {
+				canvasPanel.setJunctionFlag(ch.getState());
+			}
+			else if( ch.getLabel().equals("AreaID") ) {
+				canvasPanel.setAreaIAFlag(ch.getState());
 			}
 		}
 	}
