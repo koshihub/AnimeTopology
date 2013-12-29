@@ -26,7 +26,7 @@ public class Junction {
 	
 	private void analyzeStructure() {
 		
-		// get three lines
+		// get three vectors
 		for(int i=0; i<3; i++) {
 			vectors[i] = getLine(p, p.connect.get(i));
 		}
