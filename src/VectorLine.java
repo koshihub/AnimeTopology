@@ -7,12 +7,15 @@ public class VectorLine {
 	// Infer vector line that starts from "s" and directs to "d"
 	public VectorLine(Pixel s, Pixel d) {
 		
-		Pixel current = s, prev = s;
+		Pixel current = d, prev = s;
 		double prevAngle = 0.0f, angleDiff = 360.0f;
 		
 		for(int i=0; i<SearchDepth; i++) {
+			System.out.println(""+i+"th iteration");
+			
 			if( current.connect.size() != 2 ) {
 				// end of line
+				System.out.println("end of line");
 				break;
 			} else {
 				// find next point
@@ -27,17 +30,18 @@ public class VectorLine {
 				// calculate angle
 				double angle = calculateAngle((int)(current.x-s.x), (int)(current.y-s.y));
 				double diff = Math.abs(angle - prevAngle);
-				
+
 				// if the angle difference between current and prev gets bigger, break loop
-				if( diff < angleDiff ) {
+				if( diff <= angleDiff ) {
 					angleDiff = diff;
+					prevAngle = angle;
 				} else {
 					break;
 				}
 			}
 		}
 
-		vector = new int[] {current.x - s.x, current.y, s.y};
+		vector = new int[] {prev.x - s.x, prev.y - s.y};
 	}
 	
 	// returns angle (0.0f ~ 360.0f)

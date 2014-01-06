@@ -198,7 +198,7 @@ public class DepthImage {
 				junctions.add(new Junction(p));
 			}
 		}
-
+		/*
 		// propagate depth
 		Hierarchy hi = new Hierarchy();
 		for(Junction j : junctions) {
@@ -213,6 +213,7 @@ public class DepthImage {
 			a.depth = hi.getDepth(a.areaID);
 			a.prepareImage();
 		}
+		*/
 	}
 	
 	// connect a border pixel to neighbors

@@ -26,10 +26,17 @@ public class Junction {
 	
 	private void analyzeStructure() {
 		
+		for(int i=0; i<3; i++) {
+			VectorLine vl = new VectorLine(p, p.connect.get(i));
+			vectors[i] = vl.vector;
+		}
+		
+		/*
 		// get three vectors
 		for(int i=0; i<3; i++) {
 			vectors[i] = getLine(p, p.connect.get(i));
 		}
+		*/
 		
 		// get each cosθ and find biggest one
 		double[] cos = new double[3];
@@ -102,7 +109,7 @@ public class Junction {
 		g.drawLine(p.x + _x, p.y + _y, p.x+base[1][0] + _x, p.y+base[1][1] + _y);
 		
 		// normal
-		g.setColor(Color.yellow);
+		g.setColor(Color.blue);
 		g.drawLine(p.x + _x, p.y + _y, p.x+normal[0] + _x, p.y+normal[1] + _y);
 	}
 }
