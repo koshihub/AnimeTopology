@@ -11,8 +11,7 @@ public class VectorLine {
 		double prevAngle = 0.0f, angleDiff = 360.0f;
 		
 		for(int i=0; i<SearchDepth; i++) {
-			System.out.println(""+i+"th iteration");
-			
+
 			if( current.connect.size() != 2 ) {
 				// end of line
 				System.out.println("end of line");

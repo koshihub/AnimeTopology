@@ -35,6 +35,46 @@ public class Hierarchy {
 	}
 	
 	public void addDepthIndex() {
+
+		List<HierarchyArea> sorted = new ArrayList<HierarchyArea>();
+		Stack<HierarchyArea> start = new Stack<HierarchyArea>();
+		
+		// initialize start group
+		for(HierarchyArea ha : hierarchy) {
+			if( ha.front.size() == 0 ) {
+				start.push(ha);
+			}
+		}
+		
+		// topological sort
+		while( !start.empty() ) {
+			HierarchyArea area = start.pop();
+			sorted.add(area);
+			
+			while( area.back.size() > 0 ) {
+				HierarchyArea next = area.back.get(0);
+				area.back.remove(next);
+				next.front.remove(area);
+				if( next.front.size() == 0 ) {
+					sorted.add(next);
+				}
+			}
+		}
+
+		// check the loop
+		for(HierarchyArea ha : hierarchy) {
+			if( ha.front.size() > 0 || ha.back.size() > 0 ) {
+				System.out.println("Loop!!");
+			}
+		}
+		
+		// append depth index
+		double step = 1.0 / (double)sorted.size();
+		for(int i=0; i<sorted.size(); i++) {
+			sorted.get(i).depth = 1.0 - step * i;
+		}
+		
+		/*
 		// prepare stack
 		List<HierarchyArea> remain = new ArrayList<HierarchyArea>();
 		for(HierarchyArea ha : hierarchy) {
@@ -74,6 +114,7 @@ public class Hierarchy {
 				}
 			}
 		}
+		*/
 	}
 	
 	public double getDepth(int areaID) {

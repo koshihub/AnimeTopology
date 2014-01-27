@@ -147,7 +147,6 @@ public class DepthImage {
 	
 	// analyze areas
 	private void analyzeAreas() {
-		
 		// assign areaID
 		assignAreaID();
 
@@ -198,14 +197,13 @@ public class DepthImage {
 				junctions.add(new Junction(p));
 			}
 		}
-		/*
+
 		// propagate depth
 		Hierarchy hi = new Hierarchy();
 		for(Junction j : junctions) {
 			hi.addHierarchy(j.front, j.back[0]);
 			hi.addHierarchy(j.front, j.back[1]);
 		}
-		hi.setDepth(1, 0.0);
 		hi.addDepthIndex();
 
 		// set depths and prepare image
@@ -213,7 +211,6 @@ public class DepthImage {
 			a.depth = hi.getDepth(a.areaID);
 			a.prepareImage();
 		}
-		*/
 	}
 	
 	// connect a border pixel to neighbors
