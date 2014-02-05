@@ -33,6 +33,7 @@ public class Area {
 	public void draw(Graphics g, int _x, int _y, boolean drawAreaIDFlag) {
 		g.drawImage(buf, _x, _y, null);
 		if( drawAreaIDFlag ) {
+			g.setColor(Color.red);
 			g.drawString("[" + areaID + "]", x+_x, y+_y+20);		
 		}
 	}

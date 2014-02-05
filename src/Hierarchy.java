@@ -43,11 +43,15 @@ public class Hierarchy {
 		for(HierarchyArea ha : hierarchy) {
 			if( ha.front.size() == 0 ) {
 				start.push(ha);
+				ha.depth = 0.0;
 			}
 		}
 		
 		// topological sort
+		int loopCount = 0;
 		while( !start.empty() ) {
+			loopCount ++;
+			
 			HierarchyArea area = start.pop();
 			sorted.add(area);
 			
@@ -56,7 +60,8 @@ public class Hierarchy {
 				area.back.remove(next);
 				next.front.remove(area);
 				if( next.front.size() == 0 ) {
-					sorted.add(next);
+					start.add(next);
+					next.depth = (double)loopCount;
 				}
 			}
 		}
@@ -69,9 +74,8 @@ public class Hierarchy {
 		}
 		
 		// append depth index
-		double step = 1.0 / (double)sorted.size();
-		for(int i=0; i<sorted.size(); i++) {
-			sorted.get(i).depth = 1.0 - step * i;
+		for(HierarchyArea ha : sorted) {
+			ha.depth = 1.0 - ha.depth / (double)loopCount;
 		}
 		
 		/*

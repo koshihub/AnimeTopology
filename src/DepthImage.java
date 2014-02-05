@@ -197,7 +197,69 @@ public class DepthImage {
 				junctions.add(new Junction(p));
 			}
 		}
+		
+		// adhoc
+		int backGroundAreaID = 1;
+		
+		// Create a new graph
+		class Order {
+			int start, end, count;
+			double weight;
+			public Order(int start, int end, double weight) {
+				this.start = start;
+				this.end = end;
+				this.count = 1;
+				this.weight = weight;
+			}
+			public boolean mix(Order o) {
+				boolean mixed = false;
+				if( this.start == o.start && this.end == o.end ) {
+					this.weight += o.weight;
+					this.count ++;
+					mixed = true;
+				} else if( this.end == o.start && this.start == o.end ) {
+					this.weight += (1-o.weight);
+					this.count ++;
+					mixed = true;
+				}
+				return mixed;
+			}
+		}
+		Graph<Order> graph = new Graph<Order>();
+		List<Order> nodes = new ArrayList<Order>();
+		for(Junction j : junctions) {
+			for(int i=0; i<2; i++) {
+				boolean flag = false;
+				
+				// ignore background related orders
+				if( j.front == backGroundAreaID || j.back[i] == backGroundAreaID ) {
+					continue;
+				}
+				
+				Order order = new Order(j.front, j.back[i], j.reliability[i]);
+				for(Order o : nodes) {
+					if( o.mix(order) ) {
+						flag = true;
+						break;
+					}
+				}
+				if( !flag ) nodes.add(order);
+			}
+		}
+		System.out.println("----------------------");
+		for(Order order : nodes) {
+			order.weight /= order.count;
+			graph.addNode(order);
+			System.out.println(order.start + "->" + order.end + "(" + order.weight + ")");
+		}
+		System.out.println("----------------------");
 
+		Hierarchy hi = new Hierarchy();
+		for(Order o : nodes) {
+			hi.addHierarchy(o.start, o.end);
+		}
+		hi.addDepthIndex();
+/*
 		// propagate depth
 		Hierarchy hi = new Hierarchy();
 		for(Junction j : junctions) {
@@ -205,12 +267,17 @@ public class DepthImage {
 			hi.addHierarchy(j.front, j.back[1]);
 		}
 		hi.addDepthIndex();
-
+*/
 		// set depths and prepare image
 		for(Area a : areas) {
-			a.depth = hi.getDepth(a.areaID);
+			if( a.areaID == backGroundAreaID ) {
+				a.depth = 0.0;
+			} else {
+				a.depth = hi.getDepth(a.areaID);
+			}
 			a.prepareImage();
 		}
+
 	}
 	
 	// connect a border pixel to neighbors

@@ -14,12 +14,14 @@ public class Junction {
 	
 	int[][] base;
 	int[] normal;
+	double[] reliability;
 	
 	public Junction(Pixel p) {
 		this.p = p;
 		vectors = new int[3][];
 		base = new int[2][];
 		back = new int[2];
+		reliability = new double[2];
 		
 		analyzeStructure();
 	}
@@ -64,6 +66,9 @@ public class Junction {
 				front = id;
 			}
 		}
+		
+		reliability[0] = max;
+		reliability[1] = max;
 	}
 	
 	// get cos of two vectors
