@@ -11,8 +11,8 @@ class Main {
 	static CanvasPanel canvasPanel;
 
 	public static void main(String args[]) {
-		Graph_Test gt = new Graph_Test();
-		gt.execute();
+		//Graph_Test gt = new Graph_Test();
+		//gt.execute();
 		
 		JFrame frame = new JFrame("(・ω・)");
 

@@ -278,6 +278,61 @@ public class DepthImage {
 			a.prepareImage();
 		}
 
+		
+		// find implications
+		getImplications();
+	}
+	
+	// check implications
+	private void getImplications() {
+		/*
+		List<Pixel> cont = new ArrayList<Pixel>(this.borders);
+		while( !cont.isEmpty() ) {
+			Pixel cur = cont.get(0), next = cur;
+			cont.remove(cur);
+			List<Integer> areas = new ArrayList<Integer>(cur.separateAreaIDs);
+
+			boolean newFlag;
+			do {
+				newFlag = false;
+				for( int i=0; i<next.connect.size(); i++ ) {
+					Pixel temp = next.connect.get(i); 
+					List<Integer> common = new ArrayList<Integer>(areas);
+
+					if( cont.contains(temp) ) {
+						// get common elements
+						common.retainAll(temp.separateAreaIDs);
+						
+						// if there is a continuous border which has a common area, continue
+						if( !common.isEmpty() ) {
+							areas = common;
+							next = temp;
+							cont.remove(next);
+							newFlag = true;
+							break;
+						}
+					}
+				}
+				if( !newFlag ) {
+					// if the terminal pixel is connected to "cur", 
+					// it indicates that there is an implication
+					for(Pixel p : next.connect) {
+						if( p == cur ) {
+							System.out.println("Implication!!");
+							for(int a : areas) {
+								System.out.println("area: " + a);
+							}
+							break;
+						}
+					}
+				}
+			} while(newFlag);
+		}*/
+
+		List<Pixel> checked = new ArrayList<Pixel>();
+		
+		Implication imp = new Implication(borders);
+		imp.doAnalyze();
 	}
 	
 	// connect a border pixel to neighbors
