@@ -71,4 +71,15 @@ public class Area {
 	public void deleteBorder(Pixel p) {
 		buf.setRGB(p.x, p.y, color.getRGB());
 	}
+	
+	public Pixel getInnerPixel() {
+		Pixel ret = null;
+		for(Pixel p : pixels) {
+			if( !p.border ) {
+				ret = p;
+				break;
+			}
+		}
+		return ret;
+	}
 }
