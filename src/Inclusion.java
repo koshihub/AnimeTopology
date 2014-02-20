@@ -57,6 +57,10 @@ public class Inclusion {
 		}
 	}
 	
+	public List<InclusionInfo> getInclusions() {
+		return inclusions;
+	}
+	
 	// search possible implications
 	private List<InclusionInfo> searchInclusions(Pixel start, Pixel cur, List<Integer> areas, List<Pixel> _visited, int depth) {
 		// end of the border

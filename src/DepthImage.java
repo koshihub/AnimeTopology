@@ -41,14 +41,25 @@ public class DepthImage {
 			junctions = new ArrayList<Junction>();
 		}
 		
+		// median filter
+		image = medianFilter(image);
+		
 		// analyze borders
 		analyzeBorders();
 		
 		// analyze areas
-		analyzeAreas();
+		//analyzeAreas();
+		assignAreaID();
+		for(Area area : areas) {
+			area.prepareImage();
+		}
 	}
 	
 	public void draw(Graphics g, int x, int y, boolean drawAreaIDFlag, boolean drawJunctionFlag) {
+		// reset by black
+		g.setColor(Color.red);
+		g.fillRect(0, 0, width, height);
+		
 		// draw areas
 		for(int i=0; i<areas.size(); i++) {
 			areas.get(i).draw(g, x, y, drawAreaIDFlag);
@@ -97,40 +108,56 @@ public class DepthImage {
 				// find undecided area
 				if( !flag[i][j] && !canvas[i][j].border ) {
 					// new area
-					Area area = new Area(width, height, areaIndex, 
-							new Color(
-									(int)(Math.random()*255),
-									(int)(Math.random()*255),
-									(int)(Math.random()*255)));
+					Area area = new Area(width, height, areaIndex);
 					
 					// start filling
 					Stack<Point> stack = new Stack<Point>();
 					stack.push(new Point(i,j));
-					
+						
 					while( !stack.empty() ) {
 						Point p = stack.pop();
 						
-						// out of bounds
-						if( p.x < 0 || p.x >= width || p.y < 0 || p.y >= height ) {
-							continue;
-						}
-						
-						// border
-						if( canvas[p.x][p.y].border ) {
-							flag[p.x][p.y] = true;
-							area.addPixel(canvas[p.x][p.y]);
-							continue;
-						}
-						
-						// else
-						if( !flag[p.x][p.y] ) {
-							flag[p.x][p.y] = true;
-							canvas[p.x][p.y].areaID = areaIndex;
-							area.addPixel(canvas[p.x][p.y]);
+						// already filled pixel
+						if( flag[p.x][p.y] ) continue;
 							
-							int[][] offset = {{-1,0}, {1,0}, {0,-1}, {0,1}};
-							for(int off=0; off<offset.length; off++) {
-								stack.push(new Point(p.x+offset[off][0], p.y+offset[off][1]));
+						// search for left and right
+						int left, right;
+						for(left=p.x; left>0; left--) {
+							if( canvas[left-1][p.y].border ) {
+								break;
+							}
+						}
+						for(right=p.x; right<width-1; right++) {
+							if( canvas[right+1][p.y].border ) {
+								break;
+							}
+						}
+							
+						// fill from left to right
+						for(int x=left; x<=right; x++) {
+							flag[x][p.y] = true;
+							canvas[x][p.y].areaID = areaIndex;
+							area.addPixel(canvas[x][p.y]);
+						}
+							
+						// scan new points
+						for(int d=-1; d<=1; d+=2) {
+							boolean cont = false;
+							int y = p.y + d;
+							if( y >= 0 && y < height ) {
+								for(int x=left; x<=right; x++) {
+									if( cont && canvas[x][y].border ) {
+										stack.push(new Point(x-1, y));
+										cont = false;
+									}
+									else if( !canvas[x][y].border ) {
+										if( x == right ) {
+											stack.push(new Point(x, y));
+										} else {
+											cont = true;
+										}
+									}
+								}
 							}
 						}
 					}
@@ -221,33 +248,8 @@ public class DepthImage {
 			}
 		}
 		
-		// adhoc
-		int backGroundAreaID = 1;
-		
 		// Create a new graph
-		class Order {
-			int start, end, count;
-			double weight;
-			public Order(int start, int end, double weight) {
-				this.start = start;
-				this.end = end;
-				this.count = 1;
-				this.weight = weight;
-			}
-			public boolean mix(Order o) {
-				boolean mixed = false;
-				if( this.start == o.start && this.end == o.end ) {
-					this.weight += o.weight;
-					this.count ++;
-					mixed = true;
-				} else if( this.end == o.start && this.start == o.end ) {
-					this.weight += (1-o.weight);
-					this.count ++;
-					mixed = true;
-				}
-				return mixed;
-			}
-		}
+		/*
 		Graph<Order> graph = new Graph<Order>();
 		List<Order> nodes = new ArrayList<Order>();
 		for(Junction j : junctions) {
@@ -269,6 +271,7 @@ public class DepthImage {
 				if( !flag ) nodes.add(order);
 			}
 		}
+		
 		System.out.println("----------------------");
 		for(Order order : nodes) {
 			order.weight /= order.count;
@@ -276,10 +279,44 @@ public class DepthImage {
 			System.out.println(order.start + "->" + order.end + "(" + order.weight + ")");
 		}
 		System.out.println("----------------------");
-
+		*/
+		
+		Ordering ordering = new Ordering();
+		// junction clues
+		for(Junction j : junctions) {
+			for(int i=0; i<2; i++) {
+				ordering.addOrder(j.front, j.back[i], j.reliability[i]);
+			}
+		}
+		// inclusion clues
+		Inclusion inc = new Inclusion(borders, areas, width, height);
+		inc.doAnalyze();
+		for(InclusionInfo info : inc.getInclusions()) {
+			if( info.isValid ) {
+				for(int inner : info.innerAreaIDs) {
+					ordering.addOrder(inner, info.outerAreaID, 0.6);
+				}
+			} else {
+				for(int inner : info.innerAreaIDs) {
+					//ordering.addOrder(inner, info.outerAreaID, 10);
+				}
+			}
+		}
+		
+		System.out.println("----------------------");
+		for(Order order : ordering.getOrders()) {
+			System.out.println(order.start + "->" + order.end + "(" + order.getScore() + ")");
+		}
+		System.out.println("----------------------");
+		
+		
 		Hierarchy hi = new Hierarchy();
-		for(Order o : nodes) {
-			hi.addHierarchy(o.start, o.end);
+		for(Order o : ordering.getOrders()) {
+			if( o.getScore() > 0.5 ) {
+				hi.addHierarchy(o.start, o.end);
+			} else {
+				hi.addHierarchy(o.end, o.start);
+			}
 		}
 		hi.addDepthIndex();
 /*
@@ -293,32 +330,14 @@ public class DepthImage {
 */
 		// set depths and prepare image
 		for(Area a : areas) {
-			if( a.areaID == backGroundAreaID ) {
-				a.depth = 0.0;
-			} else {
-				a.depth = hi.getDepth(a.areaID);
-			}
+			a.depth = hi.getDepth(a.areaID);
 			a.prepareImage();
 		}
-
-		int v1=0, v2=0, v3=0;
-		for(Pixel p : borders) {
-			if(p.separateAreaIDs.size() == 1) v1++;
-			if(p.separateAreaIDs.size() == 2) v2++;
-			if(p.separateAreaIDs.size() == 3) v3++;
-		}
-		System.out.println("v1:" + v1);
-		System.out.println("v2:" + v2);
-		System.out.println("v3:" + v3);
 		
-		// find inclusions
-		getInclusions();
 	}
 	
 	// check inclusions
 	private void getInclusions() {
-		Inclusion inc = new Inclusion(borders, areas, width, height);
-		inc.doAnalyze();
 	}
 	
 	// connect a border pixel to neighbors

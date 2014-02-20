@@ -124,10 +124,9 @@ public class Hierarchy {
 	public double getDepth(int areaID) {
 		HierarchyArea ha = getHierarchyAreaByAreaID(areaID);
 		if(ha != null) {
-			System.out.println(ha.depth);
 			return ha.depth;
 		}
-		else return 0.0;
+		else return -1.0;
 	}
 	
 	public void setDepth(int areaID, double depth) {
