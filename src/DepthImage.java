@@ -42,17 +42,13 @@ public class DepthImage {
 		}
 		
 		// median filter
-		image = medianFilter(image);
+		//image = medianFilter(image);
 		
 		// analyze borders
 		analyzeBorders();
 		
 		// analyze areas
-		//analyzeAreas();
-		assignAreaID();
-		for(Area area : areas) {
-			area.prepareImage();
-		}
+		analyzeAreas();
 	}
 	
 	public void draw(Graphics g, int x, int y, boolean drawAreaIDFlag, boolean drawJunctionFlag) {
@@ -162,58 +158,44 @@ public class DepthImage {
 						}
 					}
 					
-					// append new area
-					areas.add(area);
-					
-					// next groupIndex
-					areaIndex ++;
+					// check area size
+					if( area.pixels.size() >= 0 ) {
+						// append new area
+						areas.add(area);
+						
+						// next groupIndex
+						areaIndex ++;
+					} else {
+						for(Pixel p : area.pixels) {
+							p.border = true;
+						}
+					}
 				}
 			}
 		}
+		
+		// remove small areas
+		for(Area area : areas) {
+			if( area.pixels.size() < 20 ) {
+				for(Pixel p : area.pixels) {
+					p.border = true;
+				}
+			}
+		}
+		
+		// connect pixels
+		connetBorderPixel();
 	}
 	
 	// analyze areas
 	private void analyzeAreas() {
 		// assign areaID
 		assignAreaID();
+		
+		// make borders clean
+		cleanBorders();
 
-		// set border separateAreaIDs
-		for(int b=0; b<borders.size(); b++ ) {
-			Pixel p = borders.get(b);
-			p.separateAreaIDs.clear();
-			
-			for(int i=-1; i<2; i++) {
-				for(int j=-1; j<2; j++) {
-					if( i==0 && j==0 ) {
-						continue;
-					}
-					
-					int xx = i+p.x, yy = j+p.y;
-					if( !(xx < 0 || xx >= width || yy < 0 || yy >= height) ) {
-						if( !canvas[xx][yy].border ) {
-							if( !p.separateAreaIDs.contains(canvas[xx][yy].areaID) ) {
-								p.separateAreaIDs.add(canvas[xx][yy].areaID);
-							}
-						}
-					}
-				}
-			}
-			
-			// if a border is totally surrounded by borders, it will be done afterwards. 
-			if( p.separateAreaIDs.size() == 0 ) {
-				borders.remove(p);
-				borders.add(p);
-				b--;
-			}
-			else {
-				// delete unnecessary border
-				if( p.separateAreaIDs.size() < 2 ) {
-					deleteBorder(p);
-					b--;
-				}
-			}
-		}
-
+		/*
 		// final assign
 		assignAreaID();
 		
@@ -239,6 +221,7 @@ public class DepthImage {
 				}
 			}
 		}
+		*/
 		
 		// find junctions
 		junctions.clear();
@@ -247,39 +230,6 @@ public class DepthImage {
 				junctions.add(new Junction(p));
 			}
 		}
-		
-		// Create a new graph
-		/*
-		Graph<Order> graph = new Graph<Order>();
-		List<Order> nodes = new ArrayList<Order>();
-		for(Junction j : junctions) {
-			for(int i=0; i<2; i++) {
-				boolean flag = false;
-				
-				// ignore background related orders
-				if( j.front == backGroundAreaID || j.back[i] == backGroundAreaID ) {
-					continue;
-				}
-				
-				Order order = new Order(j.front, j.back[i], j.reliability[i]);
-				for(Order o : nodes) {
-					if( o.mix(order) ) {
-						flag = true;
-						break;
-					}
-				}
-				if( !flag ) nodes.add(order);
-			}
-		}
-		
-		System.out.println("----------------------");
-		for(Order order : nodes) {
-			order.weight /= order.count;
-			graph.addNode(order);
-			System.out.println(order.start + "->" + order.end + "(" + order.weight + ")");
-		}
-		System.out.println("----------------------");
-		*/
 		
 		Ordering ordering = new Ordering();
 		// junction clues
@@ -336,8 +286,45 @@ public class DepthImage {
 		
 	}
 	
-	// check inclusions
-	private void getInclusions() {
+	// make borders clean
+	private void cleanBorders() {
+		boolean flag;
+		do {
+			System.out.println("loopppp");
+			
+			// set border separateAreaIDs
+			for(Pixel p : borders) {
+				p.separateAreaIDs.clear();
+				
+				for(int i=-1; i<2; i++) {
+					for(int j=-1; j<2; j++) {
+						if( i==0 && j==0 ) {
+							continue;
+						}
+						
+						int xx = i+p.x, yy = j+p.y;
+						if( !(xx < 0 || xx >= width || yy < 0 || yy >= height) ) {
+							if( !canvas[xx][yy].border ) {
+								if( !p.separateAreaIDs.contains(canvas[xx][yy].areaID) ) {
+									p.separateAreaIDs.add(canvas[xx][yy].areaID);
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			// remove unnecessary borders
+			flag = false;
+			for(int i=0; i<borders.size(); i++) {
+				Pixel p = borders.get(i);
+				if( p.separateAreaIDs.size() == 1 ) {
+					flag = true;
+					deleteBorder(p);
+					i--;
+				}
+			}
+		} while (flag);
 	}
 	
 	// connect a border pixel to neighbors
@@ -430,9 +417,16 @@ public class DepthImage {
 			}
 		}
 		
+		// propagate separate area id
+		p.areaID = p.separateAreaIDs.get(0);
+		for(Pixel b : p.connect) {
+			if( !b.separateAreaIDs.contains(p.areaID) ) {
+				b.separateAreaIDs.add(p.areaID);
+			}
+		}
+		
 		// remove border attributes
 		p.border = false;
-		p.areaID = p.separateAreaIDs.get(0);
 		p.connect.clear();
 		p.separateAreaIDs.clear();
 		borders.remove(p);

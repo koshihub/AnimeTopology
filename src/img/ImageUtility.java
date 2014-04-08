@@ -31,15 +31,17 @@ public class ImageUtility{
 	public static BufferedImage medianFilter(BufferedImage origin) {
 		int w = origin.getWidth();
 		int h = origin.getHeight();
-		int n = 9;
+		int n = 5;
 		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 		
 		for(int x=0; x<w; x++) {
 			for(int y=0; y<h; y++) {
+				/*
 				List<Integer> candidate = new ArrayList<Integer>();
 				for(int i=x-n/2; i<=x+n/2; i++) {
 					for(int j=y-n/2; j<=y+n/2; j++) {
 						if(i >= 0 && i < w && j >= 0 && j < h) {
+							//new Lab(origin.getRGB(i, j))
 							candidate.add(luminance(origin.getRGB(i, j)));
 						}
 					}
@@ -50,12 +52,26 @@ public class ImageUtility{
 						luminance(origin.getRGB(x, y)));
 				
 				if( true ) {
-					if( l < 4 ) {
+					if( l < 5 ) {
 						image.setRGB(x, y, Color.white.getRGB());
 					} 
 				}
 				else {
 					image.setRGB(x, y, argb(0,l,l,l));
+				}
+				*/
+				float sum = 0f;
+				int cnt = 0;
+				for(int i=x-n/2; i<=x+n/2; i++) {
+					for(int j=y-n/2; j<=y+n/2; j++) {
+						if(i >= 0 && i < w && j >= 0 && j < h) {
+							sum += luminance(origin.getRGB(i, j));
+							cnt++;
+						}
+					}
+				}
+				if( sum / cnt >= 20 ) {
+					image.setRGB(x, y, Color.white.getRGB());
 				}
 			}
 		}
